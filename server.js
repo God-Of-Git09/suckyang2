@@ -1,9 +1,9 @@
 // 황야의 무법자 - 1v1 서버 (HTTP로 index.html 제공 + WebSocket 방/전투 판정)
 const http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
-const PORT=process.env.PORT||3000,PAGE=path.join(__dirname,'public','index.html');
+const PORT=process.env.PORT||3000,PAGES=[path.join(__dirname,'public','index.html'),path.join(__dirname,'index.html')],PAGE=PAGES.find(f=>fs.existsSync(f))||PAGES[0];
 const server=http.createServer((q,r)=>{
   if(q.url==='/health'){r.end('ok');return}
-  fs.readFile(PAGE,(e,d)=>{if(e){r.writeHead(500);r.end('index.html missing');return}
+  fs.readFile(PAGE,(e,d)=>{if(e){r.writeHead(500);r.end('index.html missing. looked in: '+PAGES.join(' , ')+' | files here: '+fs.readdirSync(__dirname).join(', '));return}
     r.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'});r.end(d)})});
 const wss=new WebSocketServer({server}),rooms=new Map();let nid=1;
 const now=()=>Date.now(),snd=(ws,o)=>ws.readyState===1&&ws.send(JSON.stringify(o)),tx=(p,o)=>snd(p.ws,o),both=(r,o)=>r.ps.forEach(p=>tx(p,o));
